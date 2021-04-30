@@ -6,8 +6,9 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import List from "@material-ui/core/List";
 import { makeStyles } from "@material-ui/core/styles";
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import Toolbar from "@material-ui/core/Toolbar";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
 
 const useStyles = makeStyles({
   list: {
@@ -20,13 +21,36 @@ const useStyles = makeStyles({
 });
 
 class LinkProps {
-  constructor(public text: string, public path: string) {}
+  constructor(
+    public text: string,
+    public to: string,
+    public icon?: React.ReactNode,
+    public toggle?: () => void
+  ) {}
 }
 
-const links = [
-  new LinkProps("Home", "/"),
-  new LinkProps("Notifications", "/notification"),
-];
+const ListItemLink = (props: LinkProps) => {
+  const { icon, text, to, toggle } = props;
+
+  const renderLink = React.useMemo(
+    () =>
+      React.forwardRef(
+        (itemProps, ref: React.ForwardedRef<HTMLAnchorElement>) => (
+          <RouterLink to={to} ref={ref} {...itemProps} />
+        )
+      ),
+    [to]
+  );
+
+  return (
+    <li onClick={toggle !== undefined ? toggle : () => {}}>
+      <ListItem button component={renderLink}>
+        {icon ? <ListItemIcon>{icon}</ListItemIcon> : null}
+        <ListItemText primary={text} />
+      </ListItem>
+    </li>
+  );
+};
 
 const Menu = () => {
   const classes = useStyles();
@@ -34,21 +58,10 @@ const Menu = () => {
 
   const toggle = () => setOpen((isOpen) => !isOpen);
 
-  const createLink = (props: any, path: string) => (
-    <Link {...props} to={path} onClick={toggle} />
-  );
-
-  const createNavItem = (props: LinkProps) => {
-    return (
-      <ListItem
-        key={props.path}
-        button
-        component={(c) => createLink(c, props.path)}
-      >
-        <ListItemText>{props.text}</ListItemText>
-      </ListItem>
-    );
-  };
+  const links = [
+    new LinkProps("Home", "/", undefined, toggle),
+    new LinkProps("Notifications", "/notification", undefined, toggle),
+  ];
 
   return (
     <AppBar position="static">
@@ -57,7 +70,11 @@ const Menu = () => {
           <MenuIcon />
         </IconButton>
         <Drawer open={isOpen} onClose={toggle}>
-          <List className={classes.list}>{links.map(createNavItem)}</List>
+          <List className={classes.list}>
+            {links.map((link) => (
+              <ListItemLink {...link} key={link.to} />
+            ))}
+          </List>
         </Drawer>
       </Toolbar>
     </AppBar>

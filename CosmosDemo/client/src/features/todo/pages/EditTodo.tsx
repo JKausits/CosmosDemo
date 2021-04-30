@@ -10,6 +10,7 @@ import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import { useNotificationContext } from "../../../app/context/NotificationProvider";
+import { useRequestContext } from "../../../app/context/RequestProvider";
 
 const EditTodo = () => {
   const id = useId();
@@ -17,22 +18,24 @@ const EditTodo = () => {
   const [loading, setLoading] = useState(true);
   const [values, setValues] = useState(new TodoFormDto());
   const history = useHistory();
-
   const { sendSuccessNotification } = useNotificationContext();
+  const { runRequest } = useRequestContext();
 
   const { handleChange, handleSubmit } = useFormField(setValues, async () => {
-    await updateTodo(todo.id, values);
+    const action = () => updateTodo(todo.id, values);
+    await runRequest(action, "Updating Todo");
     sendSuccessNotification("Todo Updated");
     history.push(`/${todo.id}`);
   });
 
   useEffect(() => {
     const load = async () => {
-      await loadTodo(id);
+      const action = () => loadTodo(id);
+      await runRequest(action, "Loading Todo");
       setLoading(false);
     };
     load();
-  }, [id, loadTodo]);
+  }, [id, loadTodo, runRequest]);
 
   useEffect(() => {
     if (todo) setValues(new TodoFormDto(todo));

@@ -9,11 +9,13 @@ import TodoDetail from "../../features/todo/pages/TodoDetail";
 import NotificationContainer from "./NotificationContainer";
 import Notification from "../../features/demo/pages/Notification";
 import Menu from "./Menu";
+import RequestSpinner from "./RequestSpinner";
 
 function App() {
   return (
     <Router>
       <Menu />
+      <RequestSpinner />
       <ModalContainer />
       <NotificationContainer />
       <Container style={{ marginTop: "12px" }}>

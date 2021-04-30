@@ -16,6 +16,7 @@ import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import { makeStyles } from "@material-ui/core";
 import { useNotificationContext } from "../../../app/context/NotificationProvider";
+import { useRequestContext } from "../../../app/context/RequestProvider";
 
 const useStyles = makeStyles({
   addContainer: {
@@ -38,13 +39,15 @@ const TodoList = () => {
   const { open, close } = useModalContext();
   const { sendSuccessNotification } = useNotificationContext();
   const classes = useStyles();
+  const { runRequest } = useRequestContext();
 
   const handleDeleteTodo = (todo: TodoSummaryDto) => {
     open(
       <ConfirmDeleteTodoModal
         handleClose={close}
         handleConfirm={async () => {
-          await deleteTodo(todo.id);
+          const action = () => deleteTodo(todo.id);
+          await runRequest(action, "Deleting Todo");
           close();
           sendSuccessNotification("Todo Deleted");
         }}
@@ -54,7 +57,8 @@ const TodoList = () => {
   };
 
   const handleCompleteTodo = async (todo: TodoSummaryDto) => {
-    await completeTodo(todo.id);
+    const action = () => completeTodo(todo.id);
+    await runRequest(action, "Completing Todo");
     sendSuccessNotification("Todo Completed");
   };
 
@@ -70,7 +74,8 @@ const TodoList = () => {
       <TodoFormModal
         onClose={close}
         onSubmit={async (dto: TodoFormDto) => {
-          await createTodo(dto);
+          const action = () => createTodo(dto);
+          await runRequest(action, "Creating Todo");
           close();
           sendSuccessNotification("Todo Created");
         }}
@@ -79,8 +84,8 @@ const TodoList = () => {
   };
 
   useEffect(() => {
-    loadTodos();
-  }, [loadTodos]);
+    runRequest(loadTodos, "Loading Todos");
+  }, [loadTodos, runRequest]);
   return (
     <>
       <div className={classes.addContainer}>

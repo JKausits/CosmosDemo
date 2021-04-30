@@ -10,6 +10,7 @@ import { useModalContext } from "../../../app/context/ModalProvider";
 import { useNotificationContext } from "../../../app/context/NotificationProvider";
 import ConfirmDeleteTodoModal from "../components/ConfirmDeleteTodoModal";
 import BackButton from "../../../app/components/buttons/BackButton";
+import { useRequestContext } from "../../../app/context/RequestProvider";
 
 const TodoDetail = () => {
   const id = useId();
@@ -17,6 +18,7 @@ const TodoDetail = () => {
   const [loading, setLoading] = useState(true);
   const { open, close } = useModalContext();
   const { sendSuccessNotification } = useNotificationContext();
+  const { runRequest } = useRequestContext();
 
   const history = useHistory();
 
@@ -25,7 +27,8 @@ const TodoDetail = () => {
       <ConfirmDeleteTodoModal
         handleClose={close}
         handleConfirm={async () => {
-          await deleteTodo(todo!.id);
+          const action = () => deleteTodo(todo!.id);
+          await runRequest(action, "Deleting Todo");
           close();
           history.push("/");
           sendSuccessNotification("Todo Deleted");
@@ -36,7 +39,8 @@ const TodoDetail = () => {
   };
 
   const handleCompleteClick = async () => {
-    await completeTodo(todo.id);
+    const action = () => completeTodo(todo.id);
+    runRequest(action, "Completing Todo");
     sendSuccessNotification("Todo Completed");
   };
 
@@ -46,11 +50,12 @@ const TodoDetail = () => {
 
   useEffect(() => {
     const load = async () => {
-      await loadTodo(id);
+      const action = () => loadTodo(id);
+      await runRequest(action, "Loading Todo");
       setLoading(false);
     };
     load();
-  }, [id, loadTodo]);
+  }, [id, loadTodo, runRequest]);
 
   if (loading && todo === undefined) return <p>Loading Todo...</p>;
 
